@@ -21,12 +21,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/jszwec/s3fs/v2"
+	"github.com/flanksource/s3fs/v2"
 )
 
 var (
 	endpoint   = flag.String("endpoint", "http://localhost:4566", "s3 endpoint")
-	bucket     = flag.String("bucket", "test-github.com-jszwec-s3fs", "bucket name")
+	bucket     = flag.String("bucket", "test-github.com-flanksource-s3fs", "bucket name")
 	skipVerify = flag.Bool("skip-verify", true, "http insecure skip verify")
 )
 

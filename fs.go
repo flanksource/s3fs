@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io/fs"
+	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -45,6 +46,7 @@ type Client interface {
 // by using prefixes and delims ("/"). Because directories are simulated, ModTime
 // is always a default Time value (IsZero returns true).
 type S3FS struct {
+	prefix     string
 	cl         Client
 	bucket     string
 	readSeeker bool
@@ -64,8 +66,17 @@ func New(cl Client, bucket string, opts ...Option) *S3FS {
 	return fsys
 }
 
+func (f *S3FS) WithPrefix(prefix string) *S3FS {
+	f.prefix = prefix
+	return f
+}
+
 // Open implements fs.FS.
 func (f *S3FS) Open(name string) (fs.File, error) {
+	if f.prefix != "" {
+		name = filepath.Join(f.prefix, name)
+	}
+
 	if !fs.ValidPath(name) {
 		return nil, &fs.PathError{
 			Op:   "open",
@@ -112,6 +123,10 @@ func (f *S3FS) Open(name string) (fs.File, error) {
 
 // Stat implements fs.StatFS.
 func (f *S3FS) Stat(name string) (fs.FileInfo, error) {
+	if f.prefix != "" {
+		name = filepath.Join(f.prefix, name)
+	}
+
 	fi, err := stat(f.cl, f.bucket, name)
 	if err != nil {
 		return nil, &fs.PathError{
@@ -125,6 +140,10 @@ func (f *S3FS) Stat(name string) (fs.FileInfo, error) {
 
 // ReadDir implements fs.ReadDirFS.
 func (f *S3FS) ReadDir(name string) ([]fs.DirEntry, error) {
+	if f.prefix != "" {
+		name = filepath.Join(f.prefix, name)
+	}
+
 	d, err := openDir(f.cl, f.bucket, name)
 	if err != nil {
 		return nil, &fs.PathError{
